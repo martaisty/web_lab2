@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using web_lab2.Abstractions;
 
 namespace web_lab2.Models
 {
-    public class Order
+    public class Order: IEntity<int>
     {
         public int Id { get; set; }
 

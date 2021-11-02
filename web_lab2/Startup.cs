@@ -9,7 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using web_lab2.Abstractions;
 using web_lab2.Models;
+using web_lab2.Repositories;
 
 namespace web_lab2
 {
@@ -27,6 +29,12 @@ namespace web_lab2
         {
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connection));
+
+            services.AddTransient<IBookRepository, BookRepository>();
+            services.AddTransient<IOrderRepository, OrderRepository>();
+            services.AddTransient<ISageRepository, SageRepository>();
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
+
             services.AddControllersWithViews();
         }
 
@@ -55,6 +63,10 @@ namespace web_lab2
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute(
+                    "admin",
+                    "{controller=Admin}/{action=Books}/{id?}"
+                );
             });
         }
     }
