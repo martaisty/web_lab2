@@ -10,22 +10,22 @@ using web_lab2.Models;
 
 namespace web_lab2.Controllers
 {
-    public class BooksController : Controller
+    public class SagesController : Controller
     {
         private readonly IUnitOfWork _uow;
 
-        public BooksController(IUnitOfWork uow)
+        public SagesController(IUnitOfWork uow)
         {
             _uow = uow;
         }
 
-        // GET: Books
+        // GET: Sages
         public async Task<IActionResult> Index()
         {
-            return View(await _uow.Books.GetAllAsync());
+            return View(await _uow.Sages.GetAllAsync());
         }
 
-        // GET: Books/Details/5
+        // GET: Sages/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -33,40 +33,40 @@ namespace web_lab2.Controllers
                 return NotFound();
             }
 
-            var book = await _uow.Books.GetByIdAsync((int)id);
-
-            if (book == null)
+            var sage = await _uow.Sages.GetByIdAsync((int) id);
+            if (sage == null)
             {
                 return NotFound();
             }
 
-            return View(book);
+            return View(sage);
         }
 
-        // GET: Books/Create
+        // GET: Sages/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Books/Create
+        // POST: Sages/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Description")] Book book)
+        public async Task<IActionResult> Create([Bind("Name,Age,Photo,City")] Sage sage)
         {
             if (ModelState.IsValid)
             {
-                await _uow.Books.InsertAsync(book);
+                await _uow.Sages.InsertAsync(sage);
                 await _uow.SaveAsync();
 
                 return RedirectToAction(nameof(Index));
             }
-            return View(book);
+
+            return View(sage);
         }
 
-        // GET: Books/Edit/5
+        // GET: Sages/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -74,22 +74,23 @@ namespace web_lab2.Controllers
                 return NotFound();
             }
 
-            var book = await _uow.Books.GetByIdAsync((int) id);
-            if (book == null)
+            var sage = await _uow.Sages.GetByIdAsync((int) id);
+            if (sage == null)
             {
                 return NotFound();
             }
-            return View(book);
+
+            return View(sage);
         }
 
-        // POST: Books/Edit/5
+        // POST: Sages/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id, Name,Description")] Book book)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Age,Photo,City")] Sage sage)
         {
-            if (id != book.Id)
+            if (id != sage.Id)
             {
                 return NotFound();
             }
@@ -98,23 +99,26 @@ namespace web_lab2.Controllers
             {
                 try
                 {
-                    await _uow.Books.UpdateAsync(book);
+                    await _uow.Sages.UpdateAsync(sage);
                     await _uow.SaveAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!await _uow.Books.ExistsAsync(book.Id))
+                    if (!await _uow.Sages.ExistsAsync(sage.Id))
                     {
                         return NotFound();
                     }
+
                     throw;
                 }
+
                 return RedirectToAction(nameof(Index));
             }
-            return View(book);
+
+            return View(sage);
         }
 
-        // GET: Books/Delete/5
+        // GET: Sages/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -122,22 +126,23 @@ namespace web_lab2.Controllers
                 return NotFound();
             }
 
-            var book = await _uow.Books.GetByIdAsync((int) id);
-            if (book == null)
+            var sage = await _uow.Sages.GetByIdAsync((int) id);
+            if (sage == null)
             {
                 return NotFound();
             }
 
-            return View(book);
+            return View(sage);
         }
 
-        // POST: Books/Delete/5
+        // POST: Sages/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _uow.Books.DeleteAsync(id);
+            await _uow.Sages.DeleteAsync(id);
             await _uow.SaveAsync();
+
             return RedirectToAction(nameof(Index));
         }
     }

@@ -48,8 +48,7 @@ namespace web_lab2.Repositories
 
         public async Task DeleteAsync(TKey id)
         {
-            var entity = await ComplexEntities.FirstOrDefaultAsync(en => en.Id.Equals(id));
-            if (entity == null) throw new KeyNotFoundException();
+            var entity = await ComplexEntities.FirstAsync(en => en.Id.Equals(id));
 
             await Task.Run(() => Context.Set<TEntity>().Remove(entity));
         }
@@ -62,6 +61,11 @@ namespace web_lab2.Repositories
             }
             
             await Task.Run(() => Context.Set<TEntity>().Remove(entity));
+        }
+
+        public async Task<bool> ExistsAsync(TKey id)
+        {
+            return await Context.Set<TEntity>().AnyAsync(it => it.Id.Equals(id));
         }
     }
 }

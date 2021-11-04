@@ -20,5 +20,7 @@ namespace web_lab2.Abstractions
         Task DeleteAsync(TKey id);
 
         Task DeleteAsync(TEntity entity);
+
+        Task<bool> ExistsAsync(TKey id);
     }
 }
