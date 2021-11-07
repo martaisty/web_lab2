@@ -1,12 +1,13 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using web_lab2.Abstractions;
 using web_lab2.Models;
-using web_lab2.Models.Admin;
+using web_lab2.Models.ViewModels;
 
 namespace web_lab2.Controllers
 {
@@ -44,8 +45,9 @@ namespace web_lab2.Controllers
         }
 
         // GET: Sages/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            await PopulateAssignedBooks(new Sage());
             return View();
         }
 
@@ -54,7 +56,8 @@ namespace web_lab2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Age,Photo,City")] SageUpsert svm)
+        public async Task<IActionResult> Create([Bind("Name,Age,Photo,City")] SageViewModel svm,
+            string[] selectedBooks)
         {
             if (ModelState.IsValid)
             {
@@ -65,6 +68,7 @@ namespace web_lab2.Controllers
                     City = svm.City
                 };
                 CopyImageToSage(sage, svm.Photo);
+                await UpdateSageBooks(selectedBooks, sage);
 
                 await _uow.Sages.InsertAsync(sage);
                 await _uow.SaveAsync();
@@ -89,14 +93,14 @@ namespace web_lab2.Controllers
                 return NotFound();
             }
 
-            var svm = new SageUpsert()
+            var svm = new SageViewModel
             {
                 Id = sage.Id,
                 Age = sage.Age,
                 City = sage.City,
-                // Books = sage.Books,
                 Name = sage.Name
             };
+            await PopulateAssignedBooks(sage);
             return View(svm);
         }
 
@@ -105,7 +109,8 @@ namespace web_lab2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Age,Photo,City")] SageUpsert svm)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Age,Photo,City")] SageViewModel svm,
+            string[] selectedBooks)
         {
             if (id != svm.Id)
             {
@@ -114,26 +119,20 @@ namespace web_lab2.Controllers
 
             if (ModelState.IsValid)
             {
-                Sage sage = await _uow.Sages.GetByIdAsync(id);
+                if (!await _uow.Sages.ExistsAsync(svm.Id))
+                {
+                    return NotFound();
+                }
+
+                Sage sage = await _uow.Sages.GetByIdAsync(svm.Id);
                 sage.Name = svm.Name;
                 sage.Age = svm.Age;
                 sage.City = svm.City;
                 CopyImageToSage(sage, svm.Photo);
 
-                try
-                {
-                    await _uow.Sages.UpdateAsync(sage);
-                    await _uow.SaveAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!await _uow.Sages.ExistsAsync(sage.Id))
-                    {
-                        return NotFound();
-                    }
-
-                    throw;
-                }
+                await UpdateSageBooks(selectedBooks, sage);
+                await _uow.Sages.UpdateAsync(sage);
+                await _uow.SaveAsync();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -169,6 +168,8 @@ namespace web_lab2.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        #region Helpers
+
         private void CopyImageToSage(Sage sage, IFormFile file)
         {
             if (file != null)
@@ -182,5 +183,42 @@ namespace web_lab2.Controllers
                 sage.Photo = imageData;
             }
         }
+
+        private async Task PopulateAssignedBooks(Sage sage)
+        {
+            var allBooks = await _uow.Books.GetAllAsync();
+            var sageBooks = new HashSet<int>(sage.Books.Select(b => b.Id));
+            var viewModel = allBooks.Select(b => new AssignedBookViewModel
+            {
+                Id = b.Id,
+                Name = b.Name,
+                Description = b.Description,
+                Selected = sageBooks.Contains(b.Id)
+            }).ToList();
+            ViewData["Books"] = viewModel;
+        }
+
+        private async Task UpdateSageBooks(string[] selectedBooks, Sage sage)
+        {
+            var selectedBooksHs = new HashSet<int>(selectedBooks.Select(int.Parse));
+            var sageBooks = sage.Books.Select(b => b.Id).ToHashSet();
+            var books = await _uow.Books.GetAllAsync();
+            foreach (var book in books)
+            {
+                if (selectedBooksHs.Contains(book.Id))
+                {
+                    if (!sageBooks.Contains(book.Id))
+                    {
+                        sage.Books.Add(book);
+                    }
+                }
+                else if (sageBooks.Contains(book.Id))
+                {
+                    sage.Books.Remove(book);
+                }
+            }
+        }
+
+        #endregion
     }
 }

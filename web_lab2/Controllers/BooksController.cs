@@ -48,7 +48,7 @@ namespace web_lab2.Controllers
         // GET: Books/Create
         public async Task<IActionResult> Create()
         {
-            await PopulateAssignedSages(new Book {Sages = new List<Sage>()});
+            await PopulateAssignedSages(new Book());
             return View();
         }
 
