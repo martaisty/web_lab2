@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Threading;
 using web_lab2.Models;
 
 namespace web_lab2.DataInitializer
@@ -12,12 +12,18 @@ namespace web_lab2.DataInitializer
 
         public static void Initialize(DatabaseContext ctx)
         {
+            var books = CreateBooks();
+            var roles = CreateRoles();
+            var images = GetProfileImages();
+            var users = CreateUsers(roles);
+            var sages = CreateSages(books, images);
+            var orders = CreateOrders(books, users);
+
             if (!ctx.Books.Any())
             {
-                ctx.Books.AddRange(CreateBooks());
+                ctx.Books.AddRange(books);
             }
 
-            var roles = CreateRoles();
             if (!ctx.Roles.Any())
             {
                 ctx.Roles.AddRange(roles);
@@ -25,10 +31,74 @@ namespace web_lab2.DataInitializer
 
             if (!ctx.Users.Any())
             {
-                ctx.Users.AddRange(CreateUsers(roles));
+                ctx.Users.AddRange(users);
+            }
+
+            if (!ctx.Sages.Any())
+            {
+                ctx.Sages.AddRange(sages);
+            }
+
+            if (!ctx.Orders.Any())
+            {
+                ctx.Orders.AddRange(orders);
             }
 
             ctx.SaveChanges();
+        }
+
+        private static List<Order> CreateOrders(List<Book> books, List<User> users)
+        {
+            return new[]
+            {
+                new Order
+                {
+                    Customer = users[1],
+                    OrdersDetails = new[]
+                    {
+                        new OrdersBooks {Book = books[0], Number = 1}
+                    }.ToList()
+                },
+                new Order
+                {
+                    Customer = users[1],
+                    OrdersDetails = new[]
+                    {
+                        new OrdersBooks {Book = books[0], Number = 1},
+                        new OrdersBooks {Book = books[2], Number = 2},
+                        new OrdersBooks {Book = books[5], Number = 4},
+                        new OrdersBooks {Book = books[1], Number = 1}
+                    }.ToList()
+                },
+                new Order
+                {
+                    Customer = users[2],
+                    OrdersDetails = new[]
+                    {
+                        new OrdersBooks {Book = books[0], Number = 1},
+                        new OrdersBooks {Book = books[3], Number = 1},
+                        new OrdersBooks {Book = books[4], Number = 2}
+                    }.ToList()
+                },
+                new Order
+                {
+                    Customer = users[3],
+                    OrdersDetails = new[]
+                    {
+                        new OrdersBooks {Book = books[1], Number = 2},
+                        new OrdersBooks {Book = books[5], Number = 2}
+                    }.ToList()
+                },
+                new Order
+                {
+                    Customer = users[3],
+                    OrdersDetails = new[]
+                    {
+                        new OrdersBooks {Book = books[0], Number = 1},
+                        new OrdersBooks {Book = books[2], Number = 1}
+                    }.ToList()
+                }
+            }.ToList();
         }
 
         private static List<Book> CreateBooks()
@@ -87,6 +157,12 @@ namespace web_lab2.DataInitializer
             {
                 new User
                 {
+                    Username = "OnlyAdmin",
+                    Password = "OnlyAdmin",
+                    Roles = allRoles.Where(r => r.Name == AdminRole).ToList()
+                },
+                new User
+                {
                     Username = "Admin",
                     Password = "Admin",
                     Roles = allRoles
@@ -95,9 +171,67 @@ namespace web_lab2.DataInitializer
                 {
                     Username = "Makar",
                     Password = "Makar123",
-                    Roles = allRoles.Where(r => r.Name.Equals(CustomerRole)).ToList()
+                    Roles = allRoles.Where(r => r.Name == CustomerRole).ToList()
+                },
+                new User
+                {
+                    Username = "Sofia",
+                    Password = "Sofia123",
+                    Roles = allRoles.Where(r => r.Name == CustomerRole).ToList()
+                },
+                new User
+                {
+                    Username = "Michael",
+                    Password = "Michael123",
+                    Roles = allRoles.Where(r => r.Name == CustomerRole).ToList()
                 }
             }.ToList();
+        }
+
+        private static List<Sage> CreateSages(List<Book> books, List<byte[]> images)
+        {
+            return new[]
+            {
+                new Sage
+                {
+                    Name = "Louise D. Saunders",
+                    Age = 26,
+                    Photo = images[0],
+                    City = "Morris",
+                    Books = new[] {books[0], books[1], books[4]}.ToList()
+                },
+                new Sage
+                {
+                    Name = "Brandi J. Rubalcava",
+                    Age = 45,
+                    Photo = images[1],
+                    City = "Concord",
+                    Books = new[] {books[1], books[2], books[3]}.ToList()
+                },
+                new Sage
+                {
+                    Name = "Craig V. Bates",
+                    Age = 30,
+                    Photo = images[2],
+                    City = "San Diego",
+                    Books = new[] {books[5]}.ToList()
+                },
+                new Sage
+                {
+                    Name = "John J. Friend",
+                    Age = 22,
+                    Photo = images[3],
+                    City = "Osula",
+                    Books = new[] {books[1], books[3], books[4]}.ToList()
+                }
+            }.ToList();
+        }
+
+        private static List<byte[]> GetProfileImages()
+        {
+            var files = Directory.GetFiles("DataInitializer/profiles", "*.jpg");
+
+            return files.Select(File.ReadAllBytes).ToList();
         }
     }
 }

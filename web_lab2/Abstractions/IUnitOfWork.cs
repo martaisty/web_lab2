@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using web_lab2.Models;
 
 namespace web_lab2.Abstractions
 {

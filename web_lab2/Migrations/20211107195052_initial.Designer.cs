@@ -10,8 +10,8 @@ using web_lab2.Models;
 namespace web_lab2.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20211107101640_user-roles")]
-    partial class userroles
+    [Migration("20211107195052_initial")]
+    partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -77,9 +77,6 @@ namespace web_lab2.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("CustomerId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OrderNumber")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
