@@ -11,8 +11,8 @@ namespace web_lab2.Models
 
         public string Password { get; set; }
 
-        public List<Role> Roles { get; set; }
-        
-        public List<Order> Orders { get; set; }
+        public List<Role> Roles { get; set; } = new();
+
+        public List<Order> Orders { get; set; } = new();
     }
 }

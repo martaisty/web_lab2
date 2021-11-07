@@ -11,10 +11,10 @@ namespace web_lab2.Models
 
         public string Description { get; set; }
 
-        public List<Sage> Sages { get; set; }
+        public List<Sage> Sages { get; set; } = new();
 
-        public List<Order> Orders { get; set; }
+        public List<Order> Orders { get; set; } = new();
 
-        public List<OrdersBooks> OrdersDetails { get; set; }
+        public List<OrdersBooks> OrdersDetails { get; set; } = new();
     }
 }

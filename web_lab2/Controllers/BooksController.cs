@@ -1,9 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Security.Policy;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using web_lab2.Abstractions;
 using web_lab2.Models;
+using web_lab2.Models.ViewModels;
 
 namespace web_lab2.Controllers
 {
@@ -31,7 +35,7 @@ namespace web_lab2.Controllers
                 return NotFound();
             }
 
-            var book = await _uow.Books.GetByIdAsync((int)id);
+            var book = await _uow.Books.GetByIdAsync((int) id);
 
             if (book == null)
             {
@@ -42,8 +46,9 @@ namespace web_lab2.Controllers
         }
 
         // GET: Books/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            await PopulateAssignedSages(new Book {Sages = new List<Sage>()});
             return View();
         }
 
@@ -52,15 +57,18 @@ namespace web_lab2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Description")] Book book)
+        public async Task<IActionResult> Create([Bind("Name,Description")] Book book,
+            string[] selectedSages)
         {
             if (ModelState.IsValid)
             {
+                await UpdateBookSages(selectedSages, book);
                 await _uow.Books.InsertAsync(book);
                 await _uow.SaveAsync();
 
                 return RedirectToAction(nameof(Index));
             }
+
             return View(book);
         }
 
@@ -77,6 +85,8 @@ namespace web_lab2.Controllers
             {
                 return NotFound();
             }
+
+            await PopulateAssignedSages(book);
             return View(book);
         }
 
@@ -85,7 +95,8 @@ namespace web_lab2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id, Name,Description")] Book book)
+        public async Task<IActionResult> Edit(int id, [Bind("Id, Name,Description")] Book book,
+            string[] selectedSages)
         {
             if (id != book.Id)
             {
@@ -94,21 +105,22 @@ namespace web_lab2.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                if (!await _uow.Books.ExistsAsync(book.Id))
                 {
-                    await _uow.Books.UpdateAsync(book);
-                    await _uow.SaveAsync();
+                    return NotFound();
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!await _uow.Books.ExistsAsync(book.Id))
-                    {
-                        return NotFound();
-                    }
-                    throw;
-                }
+
+                Book existing = await _uow.Books.GetByIdAsync(book.Id);
+                existing.Name = book.Name;
+                existing.Description = book.Description;
+                await UpdateBookSages(selectedSages, existing);
+                await _uow.Books.UpdateAsync(existing);
+
+                await _uow.SaveAsync();
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(book);
         }
 
@@ -137,6 +149,42 @@ namespace web_lab2.Controllers
             await _uow.Books.DeleteAsync(id);
             await _uow.SaveAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        private async Task PopulateAssignedSages(Book book)
+        {
+            var allSages = await _uow.Sages.GetAllAsync();
+            var booksSages = new HashSet<int>(book.Sages.Select(s => s.Id));
+            var viewModel = allSages.Select(s => new AssignedSageViewModel()
+            {
+                Id = s.Id,
+                Age = s.Age,
+                Name = s.Name,
+                City = s.City,
+                Selected = booksSages.Contains(s.Id)
+            }).ToList();
+            ViewData["Sages"] = viewModel;
+        }
+
+        private async Task UpdateBookSages(string[] selectedSages, Book book)
+        {
+            var selectedSagesHs = new HashSet<int>(selectedSages.Select(int.Parse));
+            var booksSages = book.Sages.Select(s => s.Id).ToHashSet();
+            var sages = await _uow.Sages.GetAllAsync();
+            foreach (var sage in sages)
+            {
+                if (selectedSagesHs.Contains(sage.Id))
+                {
+                    if (!booksSages.Contains(sage.Id))
+                    {
+                        book.Sages.Add(sage);
+                    }
+                }
+                else if (booksSages.Contains(sage.Id))
+                {
+                    book.Sages.Remove(sage);
+                }
+            }
         }
     }
 }

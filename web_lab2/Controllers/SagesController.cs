@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using web_lab2.Abstractions;
 using web_lab2.Models;
+using web_lab2.Models.Admin;
 
 namespace web_lab2.Controllers
 {
@@ -53,7 +54,7 @@ namespace web_lab2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Age,Photo,City")] SageViewModel svm)
+        public async Task<IActionResult> Create([Bind("Name,Age,Photo,City")] SageUpsert svm)
         {
             if (ModelState.IsValid)
             {
@@ -88,12 +89,12 @@ namespace web_lab2.Controllers
                 return NotFound();
             }
 
-            var svm = new SageViewModel()
+            var svm = new SageUpsert()
             {
                 Id = sage.Id,
                 Age = sage.Age,
                 City = sage.City,
-                Books = sage.Books,
+                // Books = sage.Books,
                 Name = sage.Name
             };
             return View(svm);
@@ -104,7 +105,7 @@ namespace web_lab2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Age,Photo,City")] SageViewModel svm)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Age,Photo,City")] SageUpsert svm)
         {
             if (id != svm.Id)
             {

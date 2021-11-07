@@ -1,4 +1,5 @@
-﻿@model web_lab2.Models.Book
+﻿@using web_lab2.Models.ViewModels
+@model web_lab2.Models.Book
 
 @{
     ViewData["Title"] = "Create";
@@ -8,9 +9,10 @@
 
 <h4>Book</h4>
 <hr/>
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
+<form asp-action="Create">
+    <div class="row">
+
+        <div class="col-md-4">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
@@ -25,9 +27,42 @@
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary"/>
             </div>
-        </form>
+        </div>
+        <div class="col-md-8">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>City</th>
+                </tr>
+                </thead>
+                <tbody>
+                @{
+                    List<AssignedSageViewModel> sages = ViewBag.Sages;
+                    foreach (var sage in sages)
+                    {
+                        <tr>
+                            <td>
+                                <input type="checkbox"
+                                       name="selectedSages"
+                                       value="@sage.Id"
+                                       @Html.Raw(sage.Selected ? "checked" : "")>
+                            </td>
+                            <td>@sage.Name</td>
+                            <td>@sage.Age</td>
+                            <td>@sage.City</td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+
+        </div>
     </div>
-</div>
+
+</form>
 
 <div>
     <a asp-action="Index">Back to List</a>
