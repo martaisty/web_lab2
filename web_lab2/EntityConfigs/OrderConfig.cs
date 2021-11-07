@@ -11,7 +11,7 @@ namespace web_lab2.EntityConfigs
             builder.HasKey(o => o.Id);
 
             builder.Property(o => o.Id).ValueGeneratedOnAdd();
-
+            
             builder.HasMany(o => o.Books)
                 .WithMany(b => b.Orders)
                 .UsingEntity<OrdersBooks>(

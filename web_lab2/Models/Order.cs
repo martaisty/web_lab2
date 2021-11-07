@@ -6,9 +6,6 @@ namespace web_lab2.Models
     public class Order: IEntity<int>
     {
         public int Id { get; set; }
-
-        public int OrderNumber { get; set; }
-
         public List<Book> Books { get; set; } = new();
 
         public List<OrdersBooks> OrdersDetails { get; set; } = new();
