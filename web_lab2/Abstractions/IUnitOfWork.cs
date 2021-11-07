@@ -8,6 +8,10 @@ namespace web_lab2.Abstractions
         IBookRepository Books { get; }
         IOrderRepository Orders { get; }
         ISageRepository Sages { get; }
+
+        IUserRepository Users { get; }
+
+        IRoleRepository Roles { get; }
         Task<int> SaveAsync();
     }
 }

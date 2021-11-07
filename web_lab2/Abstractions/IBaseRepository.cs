@@ -12,6 +12,8 @@ namespace web_lab2.Abstractions
         Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate);
 
         Task<TEntity> GetByIdAsync(TKey id);
+        
+        Task<TEntity> GetFirstAsync(Expression<Func<TEntity, bool>> predicate);
 
         Task InsertAsync(TEntity entity);
 

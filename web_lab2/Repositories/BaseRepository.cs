@@ -36,6 +36,11 @@ namespace web_lab2.Repositories
             return await ComplexEntities.FirstOrDefaultAsync(entity => entity.Id.Equals(id));
         }
 
+        public async Task<TEntity> GetFirstAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await ComplexEntities.FirstOrDefaultAsync(predicate);
+        }
+
         public async Task InsertAsync(TEntity entity)
         {
             await Context.Set<TEntity>().AddAsync(entity);

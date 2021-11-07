@@ -9,7 +9,13 @@ namespace web_lab2.Models
         public DbSet<Sage> Sages { get; set; }
         public DbSet<Order> Orders { get; set; }
 
-        public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options) {}
+        public DbSet<Role> Roles { get; set; }
+
+        public DbSet<User> Users { get; set; }
+
+        public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
+        {
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -18,6 +24,8 @@ namespace web_lab2.Models
             modelBuilder.ApplyConfiguration(new OrderConfig());
             modelBuilder.ApplyConfiguration(new SageConfig());
             modelBuilder.ApplyConfiguration(new BookConfig());
+            modelBuilder.ApplyConfiguration(new RoleConfig());
+            modelBuilder.ApplyConfiguration(new UserConfig());
         }
     }
 }

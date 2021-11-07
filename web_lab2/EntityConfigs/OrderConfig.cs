@@ -27,6 +27,10 @@ namespace web_lab2.EntityConfigs
                         j.ToTable("OrdersBooks");
                     }
                 );
+
+            builder.HasOne(o => o.Customer)
+                .WithMany(u => u.Orders)
+                .HasForeignKey(o => o.CustomerId);
         }
     }
 }

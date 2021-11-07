@@ -7,11 +7,25 @@ namespace web_lab2.DataInitializer
 {
     public static class SampleData
     {
+        private const string AdminRole = "Admin";
+        private const string CustomerRole = "Customer";
+
         public static void Initialize(DatabaseContext ctx)
         {
             if (!ctx.Books.Any())
             {
                 ctx.Books.AddRange(CreateBooks());
+            }
+
+            var roles = CreateRoles();
+            if (!ctx.Roles.Any())
+            {
+                ctx.Roles.AddRange(roles);
+            }
+
+            if (!ctx.Users.Any())
+            {
+                ctx.Users.AddRange(CreateUsers(roles));
             }
 
             ctx.SaveChanges();
@@ -54,6 +68,34 @@ namespace web_lab2.DataInitializer
                     Name = "Failure Of Stardust",
                     Description =
                         "All it takes to change your world is to change the way you think. Change your thoughts and you change your world. (Norman Vincent Peale)"
+                }
+            }.ToList();
+        }
+
+        private static List<Role> CreateRoles()
+        {
+            return new[]
+            {
+                new Role {Name = AdminRole},
+                new Role {Name = CustomerRole}
+            }.ToList();
+        }
+
+        private static List<User> CreateUsers(List<Role> allRoles)
+        {
+            return new[]
+            {
+                new User
+                {
+                    Username = "Admin",
+                    Password = "Admin",
+                    Roles = allRoles
+                },
+                new User
+                {
+                    Username = "Makar",
+                    Password = "Makar123",
+                    Roles = allRoles.Where(r => r.Name.Equals(CustomerRole)).ToList()
                 }
             }.ToList();
         }

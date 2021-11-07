@@ -14,6 +14,8 @@ namespace web_lab2.Repositories
         private IBookRepository _bookRepository;
         private IOrderRepository _orderRepository;
         private ISageRepository _sageRepository;
+        private IUserRepository _userRepository;
+        private IRoleRepository _roleRepository;
 
         public UnitOfWork(DatabaseContext context, IServiceProvider serviceProvider)
         {
@@ -29,6 +31,12 @@ namespace web_lab2.Repositories
 
         public ISageRepository Sages =>
             _sageRepository ??= _serviceProvider.GetService<ISageRepository>();
+
+        public IUserRepository Users =>
+            _userRepository ??= _serviceProvider.GetService<IUserRepository>();
+
+        public IRoleRepository Roles =>
+            _roleRepository ??= _serviceProvider.GetService<IRoleRepository>();
 
         public async Task<int> SaveAsync()
         {
