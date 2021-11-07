@@ -16,6 +16,7 @@ namespace web_lab2.Repositories
             Context.Orders
                 .Include(o => o.Books)
                 .Include(o => o.OrdersDetails)
+                .Include(o => o.Customer)
                 .AsTracking();
     }
 }

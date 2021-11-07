@@ -85,6 +85,7 @@ namespace web_lab2.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
+            HttpContext.Session.Remove("cart");
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }
