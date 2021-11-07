@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using web_lab2.Abstractions;
 using web_lab2.Models;
@@ -55,17 +53,25 @@ namespace web_lab2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Age,Photo,City")] Sage sage)
+        public async Task<IActionResult> Create([Bind("Name,Age,Photo,City")] SageViewModel svm)
         {
             if (ModelState.IsValid)
             {
+                Sage sage = new Sage
+                {
+                    Name = svm.Name,
+                    Age = svm.Age,
+                    City = svm.City
+                };
+                CopyImageToSage(sage, svm.Photo);
+
                 await _uow.Sages.InsertAsync(sage);
                 await _uow.SaveAsync();
 
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(sage);
+            return View(svm);
         }
 
         // GET: Sages/Edit/5
@@ -82,7 +88,15 @@ namespace web_lab2.Controllers
                 return NotFound();
             }
 
-            return View(sage);
+            var svm = new SageViewModel()
+            {
+                Id = sage.Id,
+                Age = sage.Age,
+                City = sage.City,
+                Books = sage.Books,
+                Name = sage.Name
+            };
+            return View(svm);
         }
 
         // POST: Sages/Edit/5
@@ -90,15 +104,21 @@ namespace web_lab2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Age,Photo,City")] Sage sage)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Age,Photo,City")] SageViewModel svm)
         {
-            if (id != sage.Id)
+            if (id != svm.Id)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
+                Sage sage = await _uow.Sages.GetByIdAsync(id);
+                sage.Name = svm.Name;
+                sage.Age = svm.Age;
+                sage.City = svm.City;
+                CopyImageToSage(sage, svm.Photo);
+
                 try
                 {
                     await _uow.Sages.UpdateAsync(sage);
@@ -117,7 +137,7 @@ namespace web_lab2.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(sage);
+            return View(svm);
         }
 
         // GET: Sages/Delete/5
@@ -146,6 +166,20 @@ namespace web_lab2.Controllers
             await _uow.SaveAsync();
 
             return RedirectToAction(nameof(Index));
+        }
+
+        private void CopyImageToSage(Sage sage, IFormFile file)
+        {
+            if (file != null)
+            {
+                byte[] imageData;
+                using (var binaryReader = new BinaryReader(file.OpenReadStream()))
+                {
+                    imageData = binaryReader.ReadBytes((int) file.Length);
+                }
+
+                sage.Photo = imageData;
+            }
         }
     }
 }
